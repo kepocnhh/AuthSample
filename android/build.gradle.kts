@@ -14,7 +14,7 @@ plugins {
 }
 
 android {
-    namespace = "test.android.auth"
+    namespace = "test.cmp.auth"
     compileSdk = Version.Android.compileSdk
 
     sourceSets.getByName("main") {
@@ -83,4 +83,5 @@ androidComponents.onVariants { variant ->
 dependencies {
     implementation(compose.foundation)
     implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("com.github.kepocnhh:Logics:0.2.0")
 }
