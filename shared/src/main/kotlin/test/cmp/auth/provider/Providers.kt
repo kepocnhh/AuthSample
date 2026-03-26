@@ -2,4 +2,6 @@ package test.cmp.auth.provider
 
 internal class Providers(
     val contexts: Contexts,
+    val dirs: Dirs,
+    val locals: Locals,
 )

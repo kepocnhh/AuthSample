@@ -70,4 +70,6 @@ dependencies {
         }
         else -> error("Platform \"${entry.first}(${entry.second})\" is not supported!")
     }
+    implementation("com.github.kepocnhh:Logics:0.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.1")
 }
