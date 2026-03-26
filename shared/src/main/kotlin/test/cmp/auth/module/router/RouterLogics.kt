@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import sp.kx.logics.Logics
+import test.cmp.auth.entity.EncryptedKey
 import test.cmp.auth.provider.Providers
 
 internal class RouterLogics(
@@ -23,6 +24,13 @@ internal class RouterLogics(
         logger.debug("request state")
         _states.value = null
         val key = withContext(providers.contexts.default) {
+            // todo
+            val expected = "foo bar baz ${System.currentTimeMillis()}"
+            providers.locals.key = EncryptedKey(encoded = expected.toByteArray())
+            val actual = String(providers.locals.key!!.encoded)
+            logger.debug("expected: \"$expected\"\nactual: \"$actual\"")
+            providers.locals.key = null
+            // todo
             providers.locals.key
         }
         _states.value = if (key == null) State.None else State.Unauthorized

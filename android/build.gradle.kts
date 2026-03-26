@@ -83,5 +83,6 @@ androidComponents.onVariants { variant ->
 dependencies {
     implementation(compose.foundation)
     implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.security:security-crypto:1.1.0")
     implementation("com.github.kepocnhh:Logics:0.2.0")
 }
