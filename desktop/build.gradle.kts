@@ -47,7 +47,7 @@ version = "1.0.0"
 
 compose.desktop {
     application {
-        mainClass = "test.desktop.auth.AppKt" // todo
+        mainClass = "test.cmp.auth.AppKt" // todo
         var packageName = rootProject.name
         if (buildType != "release") {
             packageName += "-$buildType"
@@ -68,9 +68,6 @@ dependencies {
         "macos" to "arm64" -> {
             implementation(compose.desktop.macos_arm64)
         }
-        else -> {
-            val (platform, arch) = entry
-            error("Platform \"$platform($arch)\" is not supported!")
-        }
+        else -> error("Platform \"${entry.first}(${entry.second})\" is not supported!")
     }
 }
