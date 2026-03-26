@@ -15,7 +15,9 @@ import test.cmp.auth.provider.Contexts
 import test.cmp.auth.provider.Dirs
 import test.cmp.auth.provider.FinalDirs
 import test.cmp.auth.provider.FinalLocals
+import test.cmp.auth.provider.FinalLoggers
 import test.cmp.auth.provider.Locals
+import test.cmp.auth.provider.Loggers
 import test.cmp.auth.provider.Providers
 
 internal object App {
@@ -38,10 +40,12 @@ internal object App {
         )
         val dirs: Dirs = FinalDirs()
         val locals: Locals = FinalLocals(dirs = dirs)
+        val loggers: Loggers = FinalLoggers
         providers = Providers(
             contexts = contexts,
             dirs = dirs,
             locals = locals,
+            loggers = loggers,
         )
     }
 

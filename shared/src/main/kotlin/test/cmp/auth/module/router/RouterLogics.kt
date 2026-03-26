@@ -15,10 +15,12 @@ internal class RouterLogics(
         data object Authorized : State
     }
 
+    private val logger = providers.loggers.create("[Router]")
     private val _states = MutableStateFlow<State?>(null)
     val states = _states.asStateFlow()
 
     fun requestState() = launch {
+        logger.debug("request state")
         _states.value = null
         val key = withContext(providers.contexts.default) {
             providers.locals.key
