@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import test.cmp.auth.App
+import test.cmp.auth.module.registered.UnregisteredScreen
 
 @Composable
 internal fun RouterScreen() {
@@ -26,13 +27,19 @@ internal fun RouterScreen() {
             .fillMaxSize()
             .background(Color.White),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
-        ) {
-            val text = state?.let { it::class.java.name } ?: "loading..."
-            BasicText(text = text)
+        when (state) {
+            RouterLogics.State.Authorized -> TODO()
+            RouterLogics.State.Unauthorized -> TODO()
+            RouterLogics.State.Unregistered -> UnregisteredScreen()
+            null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
+                ) {
+                    BasicText(text = "loading...")
+                }
+            }
         }
     }
 }

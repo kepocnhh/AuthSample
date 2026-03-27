@@ -10,9 +10,9 @@ internal class RouterLogics(
     private val providers: Providers,
 ) : Logics(providers.contexts.main) {
     sealed interface State {
-        data object None : State
-        data object Unauthorized : State
         data object Authorized : State
+        data object Unauthorized : State
+        data object Unregistered : State
     }
 
     private val logger = providers.loggers.create("[Router]")
@@ -25,6 +25,6 @@ internal class RouterLogics(
         val key = withContext(providers.contexts.default) {
             providers.locals.key
         }
-        _states.value = if (key == null) State.None else State.Unauthorized
+        _states.value = if (key == null) State.Unregistered else State.Unauthorized
     }
 }
