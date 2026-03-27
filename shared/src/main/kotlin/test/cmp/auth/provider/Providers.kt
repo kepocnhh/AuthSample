@@ -5,4 +5,5 @@ internal class Providers(
     val dirs: Dirs,
     val locals: Locals,
     val loggers: Loggers,
+    val secrets: Secrets,
 )
