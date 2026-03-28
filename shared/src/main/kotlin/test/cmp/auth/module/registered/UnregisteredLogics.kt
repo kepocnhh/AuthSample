@@ -10,8 +10,9 @@ internal class UnregisteredLogics(
     fun register(passphrase: String) = launch {
         withContext(providers.contexts.default) {
             val seed = providers.secrets.getSeed(passphrase = passphrase)
-            val masterKey = providers.secrets.getMasterKey(seed = seed)
-            val privateKey = providers.secrets.getPrivateKey(masterKey = masterKey)
+            val mk = providers.secrets.getMasterKey(seed = seed)
+            val pk = providers.secrets.getPrivateKey(key = mk)
+            val pub = providers.secrets.getPublicKey(key = pk)
             TODO("UnregisteredLogics:register")
         }
     }
