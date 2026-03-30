@@ -16,8 +16,13 @@ internal class UnregisteredLogics(
             val pk = providers.secrets.getPrivateKey(key = mk)
             val pub = providers.secrets.getPublicKey(key = pk)
             val expected = "foo bar baz ${System.currentTimeMillis()}"
-            val encrypted = providers.secrets.encrypt(key = pub, decrypted = expected.toByteArray())
-            val decrypted = providers.secrets.decrypt(key = pk, encrypted = encrypted)
+            val ekp = providers.secrets.newKeyPair()
+            val thisKey = providers.secrets.getSharedKey(thisKey = ekp.private, thatKey = pub)
+            val nonce = ByteArray(12)
+            providers.secrets.nextBytes(nonce)
+            val encrypted = providers.secrets.encrypt(key = thisKey, decrypted = expected.toByteArray(), nonce = nonce)
+            val thatKey = providers.secrets.getSharedKey(thisKey = pk, thatKey = ekp.public)
+            val decrypted = providers.secrets.decrypt(key = thatKey, encrypted = encrypted, nonce = nonce)
             val actual = String(decrypted)
             val message = """
                 expected(${expected.length}): "$expected"

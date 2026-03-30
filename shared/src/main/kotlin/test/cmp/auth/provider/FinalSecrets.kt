@@ -3,6 +3,7 @@ package test.cmp.auth.provider
 import java.math.BigInteger
 import java.security.AlgorithmParameters
 import java.security.KeyFactory
+import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.MessageDigest
 import java.security.PrivateKey
@@ -58,24 +59,34 @@ internal class FinalSecrets : Secrets {
         return kf.generatePublic(ECPublicKeySpec(w, key.params))
     }
 
-    override fun encrypt(key: PublicKey, decrypted: ByteArray): ByteArray {
+    override fun newKeyPair(): KeyPair {
         val kpg = KeyPairGenerator.getInstance("ec")
         kpg.initialize(ECGenParameterSpec("secp256r1"))
-        val kp = kpg.generateKeyPair()
+        return kpg.generateKeyPair()
+    }
+
+    override fun getSharedKey(thisKey: PrivateKey, thatKey: PublicKey): SecretKey {
         val ka = KeyAgreement.getInstance("ecdh")
-        ka.init(kp.private)
-        ka.doPhase(key, true)
+        ka.init(thisKey)
+        ka.doPhase(thatKey, true)
         val md = MessageDigest.getInstance("sha256")
-        val sk = SecretKeySpec(md.digest(ka.generateSecret()), "aes")
+        return SecretKeySpec(md.digest(ka.generateSecret()), "aes")
+    }
+
+    override fun encrypt(key: SecretKey, decrypted: ByteArray, nonce: ByteArray): ByteArray {
         val cipher = Cipher.getInstance("aes/gcm/nopadding")
-        val nonce = ByteArray(12)
-        val random = SecureRandom.getInstanceStrong()
-        random.nextBytes(nonce)
-        cipher.init(Cipher.ENCRYPT_MODE, sk, GCMParameterSpec(128, nonce))
+        cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(128, nonce))
         return cipher.doFinal(decrypted)
     }
 
-    override fun decrypt(key: PrivateKey, encrypted: ByteArray): ByteArray {
-        TODO("Secrets:decrypt")
+    override fun decrypt(key: SecretKey, encrypted: ByteArray, nonce: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance("aes/gcm/nopadding")
+        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, nonce))
+        return cipher.doFinal(encrypted)
+    }
+
+    override fun nextBytes(bytes: ByteArray) {
+        val random = SecureRandom.getInstanceStrong()
+        random.nextBytes(bytes)
     }
 }
