@@ -19,6 +19,7 @@ internal class UnauthorizedLogics(
 
     sealed interface Event {
         data object OnAuthorize : Event
+        data object OnExit : Event
     }
 
     private val logger = providers.loggers.create("[Unauthorized]")
@@ -28,6 +29,7 @@ internal class UnauthorizedLogics(
     val states = _states.asStateFlow()
 
     fun authorize(password: String) = launch {
+        logger.debug("authorize")
         _states.value = State(isLoading = true)
         withContext(providers.contexts.default) {
             val ek = providers.locals.ek ?: TODO("no ek!")
@@ -47,5 +49,14 @@ internal class UnauthorizedLogics(
             }
         }
         _events.emit(Event.OnAuthorize)
+    }
+
+    fun exit() = launch {
+        logger.debug("exit")
+        _states.value = State(isLoading = true)
+        withContext(providers.contexts.default) {
+            providers.locals.ek = null
+        }
+        _events.emit(Event.OnExit)
     }
 }

@@ -27,7 +27,10 @@ import kotlinx.coroutines.withContext
 import test.cmp.auth.App
 
 @Composable
-internal fun UnauthorizedScreen(onAuthorize: () -> Unit) {
+internal fun UnauthorizedScreen(
+    onAuthorize: () -> Unit,
+    onExit: () -> Unit,
+) {
     val providers = remember { App.providers }
     val logics = App.logics<UnauthorizedLogics>()
     val state = logics.states.collectAsState().value
@@ -37,6 +40,7 @@ internal fun UnauthorizedScreen(onAuthorize: () -> Unit) {
             logics.events.collect { event ->
                 when (event) {
                     UnauthorizedLogics.Event.OnAuthorize -> onAuthorize()
+                    UnauthorizedLogics.Event.OnExit -> onExit()
                 }
             }
         }
@@ -83,6 +87,16 @@ internal fun UnauthorizedScreen(onAuthorize: () -> Unit) {
                     .padding(16.dp)
                     .wrapContentSize(),
                 text = "authorize",
+            )
+            BasicText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(!state.isLoading) {
+                        logics.exit()
+                    }
+                    .padding(16.dp)
+                    .wrapContentSize(),
+                text = "exit",
             )
         }
     }

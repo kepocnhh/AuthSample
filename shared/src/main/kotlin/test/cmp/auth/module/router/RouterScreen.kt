@@ -36,6 +36,9 @@ internal fun RouterScreen() {
                     onAuthorize = {
                         logics.requestState()
                     },
+                    onExit = {
+                        logics.requestState()
+                    },
                 )
             }
             RouterLogics.State.Unregistered -> {
