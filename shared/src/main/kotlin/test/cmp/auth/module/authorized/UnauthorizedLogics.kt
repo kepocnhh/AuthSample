@@ -18,7 +18,7 @@ internal class UnauthorizedLogics(
     data class State(val isLoading: Boolean)
 
     sealed interface Event {
-        data object OnAuthorize : Event
+        class OnAuthorize(val result: Result<Unit>) : Event
         data object OnExit : Event
     }
 
@@ -31,24 +31,27 @@ internal class UnauthorizedLogics(
     fun authorize(password: String) = launch {
         logger.debug("authorize")
         _states.value = State(isLoading = true)
-        withContext(providers.contexts.default) {
-            val ek = providers.locals.ek ?: TODO("no ek!")
-            ByteArrayInputStream(ek.encoded).use { stream ->
-                val iterations = stream.readInt()
-                val salt = stream.readBytes(stream.readInt())
-                val sk = providers.secrets.getSecretKey(
-                    password = password,
-                    salt = salt,
-                    iterations = iterations,
-                    keyLength = 256,
-                )
-                val nonce = stream.readBytes(stream.readInt())
-                val encrypted = stream.readBytes(stream.readInt())
-                val decrypted = providers.secrets.decrypt(key = sk, encrypted = encrypted, nonce = nonce)
-                providers.locals.pk = providers.secrets.getPrivateKey(encoded = decrypted)
+        val result = withContext(providers.contexts.default) {
+            runCatching {
+                val ek = providers.locals.ek ?: TODO("no ek!")
+                val encoded = ByteArrayInputStream(ek.encoded).use { stream ->
+                    val iterations = stream.readInt()
+                    val salt = stream.readBytes(stream.readInt())
+                    val sk = providers.secrets.getSecretKey(
+                        password = password,
+                        salt = salt,
+                        iterations = iterations,
+                        keyLength = 256,
+                    )
+                    val nonce = stream.readBytes(stream.readInt())
+                    val encrypted = stream.readBytes(stream.readInt())
+                    providers.secrets.decrypt(key = sk, encrypted = encrypted, nonce = nonce)
+                }
+                providers.locals.pk = providers.secrets.getPrivateKey(encoded = encoded)
             }
         }
-        _events.emit(Event.OnAuthorize)
+        _events.emit(Event.OnAuthorize(result = result))
+        _states.value = State(isLoading = false)
     }
 
     fun exit() = launch {

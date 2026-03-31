@@ -32,6 +32,7 @@ internal fun UnauthorizedScreen(
     onExit: () -> Unit,
 ) {
     val providers = remember { App.providers }
+    val logger = remember { providers.loggers.create("[Unauthorized]") }
     val logics = App.logics<UnauthorizedLogics>()
     val state = logics.states.collectAsState().value
     val passwords = remember { mutableStateOf("") }
@@ -39,7 +40,16 @@ internal fun UnauthorizedScreen(
         withContext(providers.contexts.default) {
             logics.events.collect { event ->
                 when (event) {
-                    UnauthorizedLogics.Event.OnAuthorize -> onAuthorize()
+                    is UnauthorizedLogics.Event.OnAuthorize -> {
+                        event.result.fold(
+                            onSuccess = {
+                                onAuthorize()
+                            },
+                            onFailure = { error ->
+                                logger.warning("on authorize error: $error")
+                            },
+                        )
+                    }
                     UnauthorizedLogics.Event.OnExit -> onExit()
                 }
             }
