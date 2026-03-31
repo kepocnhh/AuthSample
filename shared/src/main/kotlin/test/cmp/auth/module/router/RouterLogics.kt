@@ -22,9 +22,20 @@ internal class RouterLogics(
     fun requestState() = launch {
         logger.debug("request state")
         _states.value = null
-        val key = withContext(providers.contexts.default) {
-            providers.locals.key
+        val ek = withContext(providers.contexts.default) {
+            providers.locals.ek
         }
-        _states.value = if (key == null) State.Unregistered else State.Unauthorized
+        if (ek == null) {
+            _states.value = State.Unregistered
+        } else {
+            val pk = withContext(providers.contexts.default) {
+                providers.locals.pk
+            }
+            if (pk == null) {
+                _states.value = State.Unauthorized
+            } else {
+                _states.value = State.Authorized
+            }
+        }
     }
 }

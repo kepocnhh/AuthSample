@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import test.cmp.auth.App
+import test.cmp.auth.module.authorized.AuthorizedScreen
+import test.cmp.auth.module.authorized.UnauthorizedScreen
 import test.cmp.auth.module.registered.UnregisteredScreen
 
 @Composable
@@ -28,8 +30,8 @@ internal fun RouterScreen() {
             .background(Color.White),
     ) {
         when (state) {
-            RouterLogics.State.Authorized -> TODO("RouterScreen:Authorized")
-            RouterLogics.State.Unauthorized -> TODO("RouterScreen:Unauthorized")
+            RouterLogics.State.Authorized -> AuthorizedScreen()
+            RouterLogics.State.Unauthorized -> UnauthorizedScreen()
             RouterLogics.State.Unregistered -> {
                 UnregisteredScreen(
                     onRegister = {

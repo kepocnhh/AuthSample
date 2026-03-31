@@ -3,7 +3,9 @@ package test.cmp.auth.module.registered
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import sp.kx.bytes.writeBytes
 import sp.kx.logics.Logics
@@ -13,6 +15,8 @@ import test.cmp.auth.provider.Providers
 internal class UnregisteredLogics(
     private val providers: Providers,
 ) : Logics(providers.contexts.main) {
+    data class State(val isLoading: Boolean)
+
     sealed interface Event {
         data object OnRegister : Event
     }
@@ -20,8 +24,11 @@ internal class UnregisteredLogics(
     private val logger = providers.loggers.create("[Unregistered]")
     private val _events = MutableSharedFlow<Event>()
     val events: Flow<Event> = _events.asSharedFlow()
+    private val _states = MutableStateFlow<State>(State(isLoading = false))
+    val states = _states.asStateFlow()
 
     fun register(passphrase: String, password: String) = launch {
+        _states.value = State(isLoading = true)
         withContext(providers.contexts.default) {
             val seed = providers.secrets.getSeed(passphrase = passphrase)
             val mk = providers.secrets.getMasterKey(seed = seed)
@@ -40,7 +47,7 @@ internal class UnregisteredLogics(
             val nonce = ByteArray(12)
             providers.secrets.nextBytes(nonce)
             val encrypted = providers.secrets.encrypt(key = sk, decrypted = pk.encoded, nonce = nonce)
-            val bytes = ByteArrayOutputStream().use { stream ->
+            val encoded = ByteArrayOutputStream().use { stream ->
                 stream.writeBytes(iterations)
                 stream.writeBytes(salt.size)
                 stream.writeBytes(salt)
@@ -50,8 +57,9 @@ internal class UnregisteredLogics(
                 stream.writeBytes(encrypted)
                 stream.toByteArray()
             }
-            TODO("UnregisteredLogics:register")
-            providers.locals.key = EncryptedKey(encoded = bytes)
+            providers.locals.ek = EncryptedKey(encoded = encoded)
+            providers.locals.pk = pk
         }
+        _events.emit(Event.OnRegister)
     }
 }

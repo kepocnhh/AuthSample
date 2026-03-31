@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ internal fun UnregisteredScreen(
 ) {
     val providers = remember { App.providers }
     val logics = App.logics<UnregisteredLogics>()
+    val state = logics.states.collectAsState().value
     val passphrases = remember { mutableStateOf("") }
     val passwords = remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
@@ -66,6 +68,7 @@ internal fun UnregisteredScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .wrapContentHeight(),
                 value = passphrases.value,
+                readOnly = state.isLoading,
                 onValueChange = { value ->
                     if (value.length < 32) {
                         passphrases.value = value
@@ -87,6 +90,7 @@ internal fun UnregisteredScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .wrapContentHeight(),
                 value = passwords.value,
+                readOnly = state.isLoading,
                 onValueChange = { value ->
                     if (value.length < 32) {
                         passwords.value = value
@@ -99,7 +103,7 @@ internal fun UnregisteredScreen(
             BasicText(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = passphrase.isNotEmpty() && password.isNotEmpty()) {
+                    .clickable(enabled = passphrase.isNotEmpty() && password.isNotEmpty() && !state.isLoading) {
                         logics.register(passphrase = passphrase, password = password)
                     }
                     .padding(16.dp)

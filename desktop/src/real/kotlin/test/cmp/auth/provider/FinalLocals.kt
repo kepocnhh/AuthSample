@@ -1,11 +1,12 @@
 package test.cmp.auth.provider
 
+import java.security.PrivateKey
 import test.cmp.auth.entity.EncryptedKey
 
 internal class FinalLocals(
     private val dirs: Dirs,
 ) : Locals {
-    override var key: EncryptedKey?
+    override var ek: EncryptedKey?
         get() {
             val file = dirs.files.resolve("key")
             if (!file.exists()) return null
@@ -19,4 +20,6 @@ internal class FinalLocals(
                 file.writeBytes(value.encoded)
             }
         }
+
+    override var pk: PrivateKey? = null
 }
