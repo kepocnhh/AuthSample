@@ -9,6 +9,7 @@ internal interface Secrets {
     fun getSeed(passphrase: String): ByteArray
     fun getMasterKey(seed: ByteArray): SecretKey
     fun getPrivateKey(key: SecretKey): PrivateKey
+    fun getPrivateKey(encoded: ByteArray): PrivateKey
     fun getPublicKey(key: PrivateKey): PublicKey
     fun getSecretKey(password: String, salt: ByteArray, iterations: Int, keyLength: Int): SecretKey
     fun newKeyPair(): KeyPair

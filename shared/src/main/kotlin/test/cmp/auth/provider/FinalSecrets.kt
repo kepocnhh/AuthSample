@@ -15,6 +15,7 @@ import java.security.spec.ECParameterSpec
 import java.security.spec.ECPoint
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
+import java.security.spec.PKCS8EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.SecretKey
@@ -47,6 +48,11 @@ internal class FinalSecrets : Secrets {
         val s = BigInteger(1, magnitude).mod(spec.order)
         val kf = KeyFactory.getInstance("ec")
         return kf.generatePrivate(ECPrivateKeySpec(s, spec))
+    }
+
+    override fun getPrivateKey(encoded: ByteArray): PrivateKey {
+        val kf = KeyFactory.getInstance("ec")
+        return kf.generatePrivate(PKCS8EncodedKeySpec(encoded))
     }
 
     override fun getPublicKey(key: PrivateKey): PublicKey {

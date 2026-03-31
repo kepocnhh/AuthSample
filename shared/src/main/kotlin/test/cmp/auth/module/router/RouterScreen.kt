@@ -31,7 +31,13 @@ internal fun RouterScreen() {
     ) {
         when (state) {
             RouterLogics.State.Authorized -> AuthorizedScreen()
-            RouterLogics.State.Unauthorized -> UnauthorizedScreen()
+            RouterLogics.State.Unauthorized -> {
+                UnauthorizedScreen(
+                    onAuthorize = {
+                        logics.requestState()
+                    },
+                )
+            }
             RouterLogics.State.Unregistered -> {
                 UnregisteredScreen(
                     onRegister = {
