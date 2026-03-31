@@ -28,9 +28,15 @@ internal fun RouterScreen() {
             .background(Color.White),
     ) {
         when (state) {
-            RouterLogics.State.Authorized -> TODO()
-            RouterLogics.State.Unauthorized -> TODO()
-            RouterLogics.State.Unregistered -> UnregisteredScreen()
+            RouterLogics.State.Authorized -> TODO("RouterScreen:Authorized")
+            RouterLogics.State.Unauthorized -> TODO("RouterScreen:Unauthorized")
+            RouterLogics.State.Unregistered -> {
+                UnregisteredScreen(
+                    onRegister = {
+                        logics.requestState()
+                    },
+                )
+            }
             null -> {
                 Column(
                     modifier = Modifier

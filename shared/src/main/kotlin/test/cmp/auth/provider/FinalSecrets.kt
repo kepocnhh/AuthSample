@@ -18,7 +18,9 @@ import java.security.spec.ECPublicKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.SecretKey
+import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 import org.bouncycastle.jce.ECNamedCurveTable
 
@@ -57,6 +59,12 @@ internal class FinalSecrets : Secrets {
         val w = ECPoint(point.affineXCoord.toBigInteger(), point.affineYCoord.toBigInteger())
         val kf = KeyFactory.getInstance("ec")
         return kf.generatePublic(ECPublicKeySpec(w, key.params))
+    }
+
+    override fun getSecretKey(password: String, salt: ByteArray, iterations: Int, keyLength: Int): SecretKey {
+        val keyFactory = SecretKeyFactory.getInstance("pbkdf2withhmacsha$keyLength")
+        val keySpec = PBEKeySpec(password.toCharArray(), salt, iterations, keyLength)
+        return SecretKeySpec(keyFactory.generateSecret(keySpec).encoded, "aes")
     }
 
     override fun newKeyPair(): KeyPair {

@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -21,13 +22,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.withContext
 import test.cmp.auth.App
 
 @Composable
-internal fun UnregisteredScreen() {
+internal fun UnregisteredScreen(
+    onRegister: () -> Unit,
+) {
+    val providers = remember { App.providers }
     val logics = App.logics<UnregisteredLogics>()
     val passphrases = remember { mutableStateOf("") }
     val passwords = remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        withContext(providers.contexts.default) {
+            logics.events.collect { event ->
+                when (event) {
+                    UnregisteredLogics.Event.OnRegister -> onRegister()
+                }
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
