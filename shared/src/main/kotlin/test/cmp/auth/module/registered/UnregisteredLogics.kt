@@ -28,6 +28,7 @@ internal class UnregisteredLogics(
     val states = _states.asStateFlow()
 
     fun register(passphrase: String, password: String) = launch {
+        logger.debug("register")
         _states.value = State(isLoading = true)
         withContext(providers.contexts.default) {
             val seed = providers.secrets.getSeed(passphrase = passphrase)
