@@ -47,6 +47,7 @@ internal fun UnauthorizedScreen(
                             },
                             onFailure = { error ->
                                 logger.warning("on authorize error: $error")
+                                passwords.value = ""
                             },
                         )
                     }
