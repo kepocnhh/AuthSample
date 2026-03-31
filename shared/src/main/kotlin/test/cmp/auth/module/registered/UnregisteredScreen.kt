@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
@@ -28,6 +27,7 @@ import test.cmp.auth.App
 internal fun UnregisteredScreen() {
     val logics = App.logics<UnregisteredLogics>()
     val passphrases = remember { mutableStateOf("") }
+    val passwords = remember { mutableStateOf("") }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -62,8 +62,31 @@ internal fun UnregisteredScreen() {
             BasicText(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = passphrases.value.isNotEmpty()) {
-                        logics.register(passphrase = passphrases.value)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                text = "enter your password",
+            )
+            BasicTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .background(color = Color.LightGray, shape = RoundedCornerShape(16.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .wrapContentHeight(),
+                value = passwords.value,
+                onValueChange = { value ->
+                    if (value.length < 32) {
+                        passwords.value = value
+                    }
+                },
+                textStyle = TextStyle(fontFamily = FontFamily.Monospace),
+            )
+            val passphrase = passphrases.value
+            val password = passwords.value
+            BasicText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = passphrase.isNotEmpty() && password.isNotEmpty()) {
+                        logics.register(passphrase = passphrase, password = password)
                     }
                     .padding(16.dp)
                     .wrapContentSize(),

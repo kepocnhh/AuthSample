@@ -9,11 +9,12 @@ internal class UnregisteredLogics(
 ) : Logics(providers.contexts.main) {
     private val logger = providers.loggers.create("[Unregistered]")
 
-    fun register(passphrase: String) = launch {
+    fun register(passphrase: String, password: String) = launch {
         withContext(providers.contexts.default) {
             val seed = providers.secrets.getSeed(passphrase = passphrase)
             val mk = providers.secrets.getMasterKey(seed = seed)
             val pk = providers.secrets.getPrivateKey(key = mk)
+            
             val pub = providers.secrets.getPublicKey(key = pk)
             val expected = "foo bar baz ${System.currentTimeMillis()}"
             val ekp = providers.secrets.newKeyPair()
