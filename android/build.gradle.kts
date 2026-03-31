@@ -59,6 +59,15 @@ android {
                 this.versionNameSuffix = "-$name"
             }
         }
+        "device".also { dimension ->
+            flavorDimensions += dimension
+            create("phone") {
+                this.dimension = dimension
+            }
+            create("watch") {
+                this.dimension = dimension
+            }
+        }
     }
 
     buildFeatures.buildConfig = true
