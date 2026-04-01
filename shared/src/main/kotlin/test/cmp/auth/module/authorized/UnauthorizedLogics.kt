@@ -1,14 +1,11 @@
 package test.cmp.auth.module.authorized
 
-import java.io.ByteArrayInputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
-import sp.kx.bytes.readBytes
-import sp.kx.bytes.readInt
 import sp.kx.logics.Logics
 import test.cmp.auth.provider.Providers
 
@@ -34,19 +31,13 @@ internal class UnauthorizedLogics(
         val result = withContext(providers.contexts.default) {
             runCatching {
                 val ek = providers.locals.ek ?: TODO("no ek!")
-                val encoded = ByteArrayInputStream(ek.encoded).use { stream ->
-                    val iterations = stream.readInt()
-                    val salt = stream.readBytes(stream.readInt())
-                    val sk = providers.secrets.getSecretKey(
-                        password = password,
-                        salt = salt,
-                        iterations = iterations,
-                        keyLength = 256,
-                    )
-                    val nonce = stream.readBytes(stream.readInt())
-                    val encrypted = stream.readBytes(stream.readInt())
-                    providers.secrets.decrypt(key = sk, encrypted = encrypted, nonce = nonce)
-                }
+                val sk = providers.secrets.getSecretKey(
+                    password = password,
+                    salt = ek.cs.salt,
+                    iterations = ek.cs.iterations,
+                    keyLength = 256,
+                )
+                val encoded = providers.secrets.decrypt(key = sk, encrypted = ek.encoded, nonce = ek.cs.nonce)
                 providers.locals.pk = providers.secrets.toPrivateKey(encoded = encoded)
             }
         }

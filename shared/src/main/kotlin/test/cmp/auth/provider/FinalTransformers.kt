@@ -58,10 +58,7 @@ internal class FinalTransformers(
                         .let(src::readBytes)
                         .also(dst::writeBytes)
                         .let(secrets::toPublicKey)
-                    val hash = src.readBytes(4)
-                        .also(dst::writeBytes)
-                        .readInt()
-                        .let(src::readBytes)
+                    val hash = src.readBytes(src.readInt())
                     if (!hash.contentEquals(hashes.sha256(dst.toByteArray()))) TODO("Transformers:ek:decode")
                     EncryptedKey(
                         cs = CipherSpec(

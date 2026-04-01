@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import sp.kx.bytes.hex
 import sp.kx.logics.Logics
 import test.cmp.auth.entity.CipherSpec
 import test.cmp.auth.entity.EncryptedKey
@@ -34,6 +35,7 @@ internal class UnregisteredLogics(
             val ek = try {
                 providers.transformers.ek.decode(file.readBytes())
             } catch (error: Throwable) {
+                logger.warning("read file ${file.name} error: $error")
                 continue
             }
             list.add(ek)
@@ -66,7 +68,7 @@ internal class UnregisteredLogics(
             )
             val nonce = ByteArray(12)
             providers.secrets.nextBytes(nonce)
-            providers.locals.ek = EncryptedKey(
+            val ek = EncryptedKey(
                 cs = CipherSpec(
                     iterations = iterations,
                     salt = salt,
@@ -75,6 +77,18 @@ internal class UnregisteredLogics(
                 encoded = providers.secrets.encrypt(key = sk, decrypted = pk.encoded, nonce = nonce),
                 pub = providers.secrets.getPublicKey(key = pk),
             )
+            val prefix = ek.pub.encoded
+                .let(providers.hashes::sha256)
+                .copyOf(8)
+                .hex()
+            val suffix = ek.cs.salt
+                .let(providers.hashes::sha256)
+                .copyOf(8)
+                .hex()
+            providers.dirs.keys
+                .resolve("$prefix-$suffix.bin")
+                .writeBytes(providers.transformers.ek.encode(decoded = ek))
+            providers.locals.ek = ek
             providers.locals.pk = pk
         }
         _events.emit(Event.OnEnter)

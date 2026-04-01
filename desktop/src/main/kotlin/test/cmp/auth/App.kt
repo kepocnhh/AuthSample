@@ -5,7 +5,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import sp.kx.logics.Logics
 import sp.kx.logics.LogicsFactory
