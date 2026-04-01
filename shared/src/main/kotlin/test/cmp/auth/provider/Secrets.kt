@@ -6,10 +6,11 @@ import java.security.PublicKey
 import javax.crypto.SecretKey
 
 internal interface Secrets {
+    fun toPrivateKey(encoded: ByteArray): PrivateKey
+    fun toPublicKey(encoded: ByteArray): PublicKey
     fun getSeed(passphrase: String): ByteArray
     fun getMasterKey(seed: ByteArray): SecretKey
     fun getPrivateKey(key: SecretKey): PrivateKey
-    fun getPrivateKey(encoded: ByteArray): PrivateKey
     fun getPublicKey(key: PrivateKey): PublicKey
     fun getSecretKey(password: String, salt: ByteArray, iterations: Int, keyLength: Int): SecretKey
     fun newKeyPair(): KeyPair

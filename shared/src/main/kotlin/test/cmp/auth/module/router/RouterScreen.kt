@@ -39,7 +39,7 @@ internal fun RouterScreen() {
             }
             RouterLogics.State.Unauthorized -> {
                 UnauthorizedScreen(
-                    onAuthorize = {
+                    onUnlock = {
                         logics.requestState()
                     },
                     onExit = {
@@ -49,7 +49,7 @@ internal fun RouterScreen() {
             }
             RouterLogics.State.Unregistered -> {
                 UnregisteredScreen(
-                    onRegister = {
+                    onEnter = {
                         logics.requestState()
                     },
                 )

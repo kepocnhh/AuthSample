@@ -14,13 +14,17 @@ import test.cmp.auth.module.router.RouterScreen
 import test.cmp.auth.provider.Contexts
 import test.cmp.auth.provider.Dirs
 import test.cmp.auth.provider.FinalDirs
+import test.cmp.auth.provider.FinalHashes
 import test.cmp.auth.provider.FinalLocals
 import test.cmp.auth.provider.FinalLoggers
 import test.cmp.auth.provider.FinalSecrets
+import test.cmp.auth.provider.FinalTransformers
+import test.cmp.auth.provider.Hashes
 import test.cmp.auth.provider.Locals
 import test.cmp.auth.provider.Loggers
 import test.cmp.auth.provider.Providers
 import test.cmp.auth.provider.Secrets
+import test.cmp.auth.provider.Transformers
 
 internal object App {
     val providers: Providers
@@ -41,15 +45,22 @@ internal object App {
             default = Dispatchers.Default,
         )
         val dirs: Dirs = FinalDirs()
-        val locals: Locals = FinalLocals(dirs = dirs)
+        val locals: Locals = FinalLocals()
         val loggers: Loggers = FinalLoggers
         val secrets: Secrets = FinalSecrets()
+        val hashes: Hashes = FinalHashes()
+        val transformers: Transformers = FinalTransformers(
+            hashes = hashes,
+            secrets = secrets,
+        )
         providers = Providers(
             contexts = contexts,
             dirs = dirs,
             locals = locals,
             loggers = loggers,
             secrets = secrets,
+            hashes = hashes,
+            transformers = transformers,
         )
     }
 

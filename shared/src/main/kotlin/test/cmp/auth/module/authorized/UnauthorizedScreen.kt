@@ -28,7 +28,7 @@ import test.cmp.auth.App
 
 @Composable
 internal fun UnauthorizedScreen(
-    onAuthorize: () -> Unit,
+    onUnlock: () -> Unit,
     onExit: () -> Unit,
 ) {
     val providers = remember { App.providers }
@@ -40,10 +40,10 @@ internal fun UnauthorizedScreen(
         withContext(providers.contexts.default) {
             logics.events.collect { event ->
                 when (event) {
-                    is UnauthorizedLogics.Event.OnAuthorize -> {
+                    is UnauthorizedLogics.Event.OnUnlock -> {
                         event.result.fold(
                             onSuccess = {
-                                onAuthorize()
+                                onUnlock()
                             },
                             onFailure = { error ->
                                 logger.warning("on authorize error: $error")
@@ -93,11 +93,11 @@ internal fun UnauthorizedScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(enabled = password.isNotEmpty() && !state.isLoading) {
-                        logics.authorize(password = password)
+                        logics.unlock(password = password)
                     }
                     .padding(16.dp)
                     .wrapContentSize(),
-                text = "authorize",
+                text = "unlock",
             )
             BasicText(
                 modifier = Modifier

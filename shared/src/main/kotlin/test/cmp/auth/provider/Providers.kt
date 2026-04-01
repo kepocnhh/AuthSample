@@ -6,4 +6,6 @@ internal class Providers(
     val locals: Locals,
     val loggers: Loggers,
     val secrets: Secrets,
+    val hashes: Hashes,
+    val transformers: Transformers,
 )

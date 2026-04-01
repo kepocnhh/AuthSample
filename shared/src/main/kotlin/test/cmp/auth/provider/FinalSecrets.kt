@@ -16,6 +16,7 @@ import java.security.spec.ECPoint
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
 import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.SecretKey
@@ -26,6 +27,16 @@ import javax.crypto.spec.SecretKeySpec
 import org.bouncycastle.jce.ECNamedCurveTable
 
 internal class FinalSecrets : Secrets {
+    override fun toPrivateKey(encoded: ByteArray): PrivateKey {
+        val kf = KeyFactory.getInstance("ec")
+        return kf.generatePrivate(PKCS8EncodedKeySpec(encoded))
+    }
+
+    override fun toPublicKey(encoded: ByteArray): PublicKey {
+        val kf = KeyFactory.getInstance("ec")
+        return kf.generatePublic(X509EncodedKeySpec(encoded))
+    }
+
     override fun getSeed(passphrase: String): ByteArray {
         val md = MessageDigest.getInstance("sha256")
         md.update("seed".toByteArray())
@@ -48,11 +59,6 @@ internal class FinalSecrets : Secrets {
         val s = BigInteger(1, magnitude).mod(spec.order)
         val kf = KeyFactory.getInstance("ec")
         return kf.generatePrivate(ECPrivateKeySpec(s, spec))
-    }
-
-    override fun getPrivateKey(encoded: ByteArray): PrivateKey {
-        val kf = KeyFactory.getInstance("ec")
-        return kf.generatePrivate(PKCS8EncodedKeySpec(encoded))
     }
 
     override fun getPublicKey(key: PrivateKey): PublicKey {

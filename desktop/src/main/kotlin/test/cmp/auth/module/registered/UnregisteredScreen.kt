@@ -4,11 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -24,22 +27,27 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.withContext
+import sp.kx.bytes.hex
 import test.cmp.auth.App
 
 @Composable
 internal fun UnregisteredScreen(
-    onRegister: () -> Unit,
+    onEnter: () -> Unit,
 ) {
     val providers = remember { App.providers }
     val logics = App.logics<UnregisteredLogics>()
     val state = logics.states.collectAsState().value
+    val keys = logics.keys.collectAsState().value
+    LaunchedEffect(Unit) {
+        logics.requestKeys()
+    }
     val passphrases = remember { mutableStateOf("") }
     val passwords = remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         withContext(providers.contexts.default) {
             logics.events.collect { event ->
                 when (event) {
-                    UnregisteredLogics.Event.OnRegister -> onRegister()
+                    UnregisteredLogics.Event.OnEnter -> onEnter()
                 }
             }
         }
@@ -104,12 +112,34 @@ internal fun UnregisteredScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(enabled = passphrase.isNotEmpty() && password.isNotEmpty() && !state.isLoading) {
-                        logics.register(passphrase = passphrase, password = password)
+                        logics.enter(passphrase = passphrase, password = password)
                     }
                     .padding(16.dp)
                     .wrapContentSize(),
-                text = "register",
+                text = "enter",
             )
+            if (keys.isNotEmpty()) {
+                BasicText(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    text = "or enter as:",
+                )
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    for (ek in keys) {
+                        item {
+                            BasicText(
+                                modifier = Modifier,
+                                text = providers.hashes.sha256(ek.pub.encoded).copyOf(8).hex(),
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

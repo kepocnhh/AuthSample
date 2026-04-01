@@ -18,7 +18,7 @@ internal class UnauthorizedLogics(
     data class State(val isLoading: Boolean)
 
     sealed interface Event {
-        class OnAuthorize(val result: Result<Unit>) : Event
+        class OnUnlock(val result: Result<Unit>) : Event
         data object OnExit : Event
     }
 
@@ -28,8 +28,8 @@ internal class UnauthorizedLogics(
     private val _states = MutableStateFlow<State>(State(isLoading = false))
     val states = _states.asStateFlow()
 
-    fun authorize(password: String) = launch {
-        logger.debug("authorize")
+    fun unlock(password: String) = launch {
+        logger.debug("unlock")
         _states.value = State(isLoading = true)
         val result = withContext(providers.contexts.default) {
             runCatching {
@@ -47,10 +47,10 @@ internal class UnauthorizedLogics(
                     val encrypted = stream.readBytes(stream.readInt())
                     providers.secrets.decrypt(key = sk, encrypted = encrypted, nonce = nonce)
                 }
-                providers.locals.pk = providers.secrets.getPrivateKey(encoded = encoded)
+                providers.locals.pk = providers.secrets.toPrivateKey(encoded = encoded)
             }
         }
-        _events.emit(Event.OnAuthorize(result = result))
+        _events.emit(Event.OnUnlock(result = result))
         _states.value = State(isLoading = false)
     }
 
