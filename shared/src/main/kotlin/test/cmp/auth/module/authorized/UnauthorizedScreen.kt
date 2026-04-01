@@ -46,7 +46,7 @@ internal fun UnauthorizedScreen(
                                 onUnlock()
                             },
                             onFailure = { error ->
-                                logger.warning("on authorize error: $error")
+                                logger.warning("on unlock error: $error")
                                 passwords.value = ""
                             },
                         )
@@ -70,7 +70,7 @@ internal fun UnauthorizedScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                text = "enter your password",
+                text = "password",
             )
             BasicTextField(
                 modifier = Modifier

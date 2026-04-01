@@ -93,4 +93,12 @@ internal class UnregisteredLogics(
         }
         _events.emit(Event.OnEnter)
     }
+
+    fun enter(ek: EncryptedKey) = launch {
+        logger.debug("enter")
+        withContext(providers.contexts.default) {
+            providers.locals.ek = ek
+        }
+        _events.emit(Event.OnEnter)
+    }
 }

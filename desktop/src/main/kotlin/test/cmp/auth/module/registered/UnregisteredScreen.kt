@@ -2,15 +2,15 @@ package test.cmp.auth.module.registered
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -20,8 +20,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -35,6 +35,7 @@ internal fun UnregisteredScreen(
     onEnter: () -> Unit,
 ) {
     val providers = remember { App.providers }
+    val logger = remember { providers.loggers.create("[Unregistered]") }
     val logics = App.logics<UnregisteredLogics>()
     val state = logics.states.collectAsState().value
     val keys = logics.keys.collectAsState().value
@@ -52,21 +53,21 @@ internal fun UnregisteredScreen(
             }
         }
     }
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
     ) {
+        Spacer(Modifier.weight(1f))
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
+                .fillMaxWidth(),
         ) {
             BasicText(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                text = "enter your passphrase",
+                text = "passphrase",
             )
             BasicTextField(
                 modifier = Modifier
@@ -88,7 +89,7 @@ internal fun UnregisteredScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                text = "enter your password",
+                text = "password",
             )
             BasicTextField(
                 modifier = Modifier
@@ -118,23 +119,41 @@ internal fun UnregisteredScreen(
                     .wrapContentSize(),
                 text = "enter",
             )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+        ) {
             if (keys.isNotEmpty()) {
                 BasicText(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    text = "or enter as:",
+                    text = "or enter as",
                 )
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     for (ek in keys) {
                         item {
+                            val text = """
+                                ${providers.hashes.sha256(ek.pub.encoded).copyOf(8).hex()}
+                                ${providers.hashes.sha256(ek.cs.salt).copyOf(8).hex()}
+                            """.trimIndent()
                             BasicText(
-                                modifier = Modifier,
-                                text = providers.hashes.sha256(ek.pub.encoded).copyOf(8).hex(),
+                                modifier = Modifier
+                                    .background(color = Color.LightGray, shape = RoundedCornerShape(16.dp))
+                                    .clip(shape = RoundedCornerShape(16.dp))
+                                    .clickable {
+                                        logics.enter(ek = ek)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .wrapContentHeight(),
+                                text = text,
                             )
                         }
                     }
