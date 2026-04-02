@@ -18,4 +18,6 @@ internal interface Secrets {
     fun encrypt(key: SecretKey, decrypted: ByteArray, nonce: ByteArray): ByteArray
     fun decrypt(key: SecretKey, encrypted: ByteArray, nonce: ByteArray): ByteArray
     fun nextBytes(bytes: ByteArray)
+    fun sign(key: PrivateKey, encoded: ByteArray): ByteArray
+    fun verify(key: PublicKey, signature: ByteArray, encoded: ByteArray): Boolean
 }

@@ -9,6 +9,7 @@ import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.SecureRandom
+import java.security.Signature
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.ECParameterSpec
@@ -108,5 +109,19 @@ internal class FinalSecrets : Secrets {
     override fun nextBytes(bytes: ByteArray) {
         val random = SecureRandom.getInstanceStrong()
         random.nextBytes(bytes)
+    }
+
+    override fun sign(key: PrivateKey, encoded: ByteArray): ByteArray {
+        val sig = Signature.getInstance("sha256withecdsa")
+        sig.initSign(key)
+        sig.update(encoded)
+        return sig.sign()
+    }
+
+    override fun verify(key: PublicKey, signature: ByteArray, encoded: ByteArray): Boolean {
+        val sig = Signature.getInstance("sha256withecdsa")
+        sig.initVerify(key)
+        sig.update(encoded)
+        return sig.verify(signature)
     }
 }
