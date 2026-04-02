@@ -50,7 +50,6 @@ internal object App {
         val hashes: Hashes = FinalHashes()
         val transformers: Transformers = FinalTransformers(
             hashes = hashes,
-            secrets = secrets,
         )
         providers = Providers(
             contexts = contexts,

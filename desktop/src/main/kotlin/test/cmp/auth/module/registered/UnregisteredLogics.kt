@@ -1,12 +1,13 @@
 package test.cmp.auth.module.registered
 
+import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
-import sp.kx.bytes.hex
+import sp.kx.bytes.readLong
 import sp.kx.logics.Logics
 import test.cmp.auth.entity.CipherSpec
 import test.cmp.auth.entity.EncryptedKey
@@ -68,26 +69,22 @@ internal class UnregisteredLogics(
             )
             val nonce = ByteArray(12)
             providers.secrets.nextBytes(nonce)
+            val pub = providers.secrets.getPublicKey(key = pk)
+            val id = providers.hashes.sha256(pub.encoded).copyOf(16).let { bytes ->
+                UUID(bytes.readLong(), bytes.readLong(8))
+            }
             val ek = EncryptedKey(
+                id = id,
                 cs = CipherSpec(
                     iterations = iterations,
                     salt = salt,
                     nonce = nonce,
                 ),
                 encoded = providers.secrets.encrypt(key = sk, decrypted = pk.encoded, nonce = nonce),
-                pub = providers.secrets.getPublicKey(key = pk),
             )
-            val prefix = ek.pub.encoded
-                .let(providers.hashes::sha256)
-                .copyOf(8)
-                .hex()
-            val suffix = ek.cs.salt
-                .let(providers.hashes::sha256)
-                .copyOf(8)
-                .hex()
-            providers.dirs.keys
-                .resolve("$prefix-$suffix.bin")
-                .writeBytes(providers.transformers.ek.encode(decoded = ek))
+            val file = providers.dirs.keys.resolve("$id.bin")
+            if (file.exists()) TODO("UnregisteredLogics:enter")
+            file.writeBytes(providers.transformers.ek.encode(decoded = ek))
             providers.locals.ek = ek
             providers.locals.pk = pk
         }

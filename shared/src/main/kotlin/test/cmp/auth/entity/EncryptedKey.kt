@@ -1,9 +1,9 @@
 package test.cmp.auth.entity
 
-import java.security.PublicKey
+import java.util.UUID
 
 internal class EncryptedKey(
+    val id: UUID,
     val cs: CipherSpec,
     val encoded: ByteArray,
-    val pub: PublicKey,
 )

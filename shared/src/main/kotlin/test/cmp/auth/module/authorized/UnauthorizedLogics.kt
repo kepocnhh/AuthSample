@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import sp.kx.bytes.toByteArray
 import sp.kx.logics.Logics
 import test.cmp.auth.provider.Providers
 
@@ -38,7 +39,12 @@ internal class UnauthorizedLogics(
                     keyLength = 256,
                 )
                 val encoded = providers.secrets.decrypt(key = sk, encrypted = ek.encoded, nonce = ek.cs.nonce)
-                providers.locals.pk = providers.secrets.toPrivateKey(encoded = encoded)
+                val pk = providers.secrets.toPrivateKey(encoded = encoded)
+                val pub = providers.secrets.getPublicKey(key = pk)
+                val expected = providers.hashes.sha256(pub.encoded).copyOf(16)
+                val actual = ek.id.toByteArray()
+                if (!expected.contentEquals(actual)) TODO("UnauthorizedLogics:unlock")
+                providers.locals.pk = pk
             }
         }
         _events.emit(Event.OnUnlock(result = result))

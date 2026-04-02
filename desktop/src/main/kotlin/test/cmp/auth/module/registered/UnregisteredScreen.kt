@@ -27,7 +27,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.withContext
-import sp.kx.bytes.hex
 import test.cmp.auth.App
 
 @Composable
@@ -140,10 +139,6 @@ internal fun UnregisteredScreen(
                 ) {
                     for (ek in keys) {
                         item {
-                            val text = """
-                                ${providers.hashes.sha256(ek.pub.encoded).copyOf(8).hex()}
-                                ${providers.hashes.sha256(ek.cs.salt).copyOf(8).hex()}
-                            """.trimIndent()
                             BasicText(
                                 modifier = Modifier
                                     .background(color = Color.LightGray, shape = RoundedCornerShape(16.dp))
@@ -153,7 +148,7 @@ internal fun UnregisteredScreen(
                                     }
                                     .padding(horizontal = 16.dp, vertical = 8.dp)
                                     .wrapContentHeight(),
-                                text = text,
+                                text = ek.id.toString(),
                             )
                         }
                     }
