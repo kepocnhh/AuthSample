@@ -14,11 +14,15 @@ import test.cmp.auth.provider.FinalLocals
 import test.cmp.auth.provider.FinalLoggers
 import test.cmp.auth.provider.Contexts
 import test.cmp.auth.provider.Dirs
+import test.cmp.auth.provider.FinalHashes
 import test.cmp.auth.provider.FinalSecrets
+import test.cmp.auth.provider.FinalTransformers
+import test.cmp.auth.provider.Hashes
 import test.cmp.auth.provider.Locals
 import test.cmp.auth.provider.Loggers
 import test.cmp.auth.provider.Providers
 import test.cmp.auth.provider.Secrets
+import test.cmp.auth.provider.Transformers
 
 internal class App : Application() {
     override fun onCreate() {
@@ -29,15 +33,25 @@ internal class App : Application() {
         )
         val context: Context = this
         val dirs: Dirs = FinalDirs(context = context)
-        val locals: Locals = FinalLocals(dirs = dirs)
         val loggers: Loggers = FinalLoggers
         val secrets: Secrets = FinalSecrets()
+        val hashes: Hashes = FinalHashes()
+        val transformers: Transformers = FinalTransformers(
+            hashes = hashes,
+        )
+        val locals: Locals = FinalLocals(
+            dirs = dirs,
+            transformers = transformers,
+            loggers = loggers,
+        )
         _providers = Providers(
             contexts = contexts,
             dirs = dirs,
             locals = locals,
             loggers = loggers,
             secrets = secrets,
+            hashes = hashes,
+            transformers = transformers,
         )
     }
 

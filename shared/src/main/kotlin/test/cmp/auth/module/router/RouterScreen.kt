@@ -49,7 +49,7 @@ internal fun RouterScreen() {
             }
             RouterLogics.State.Unregistered -> {
                 UnregisteredScreen(
-                    onEnter = {
+                    onRegister = {
                         logics.requestState()
                     },
                 )

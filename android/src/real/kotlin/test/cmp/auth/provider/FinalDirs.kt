@@ -1,9 +1,18 @@
 package test.cmp.auth.provider
 
 import android.content.Context
-import test.cmp.auth.provider.Dirs
+import java.io.File
 
 internal class FinalDirs(context: Context) : Dirs {
-    override val files = context.filesDir ?: error("No files!")
-    override val cache = context.cacheDir ?: error("No cache!")
+    private val files = context.filesDir ?: error("No files!")
+    override val keys: File
+        get() {
+            val file = files.resolve("keys")
+            if (file.exists()) {
+                check(file.isDirectory)
+            } else {
+                check(file.mkdirs())
+            }
+            return file
+        }
 }
