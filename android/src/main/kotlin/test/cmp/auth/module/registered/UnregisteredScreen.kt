@@ -35,7 +35,6 @@ internal fun UnregisteredScreen(
     val logics = App.logics<UnregisteredLogics>()
     val state = logics.states.collectAsState().value
     val passphrases = remember { mutableStateOf("") }
-    val passwords = remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         withContext(providers.contexts.default) {
             logics.events.collect { event ->
@@ -77,35 +76,12 @@ internal fun UnregisteredScreen(
                 },
                 textStyle = TextStyle(fontFamily = FontFamily.Monospace),
             )
-            BasicText(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                text = "password",
-            )
-            BasicTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .background(color = Color.LightGray, shape = RoundedCornerShape(16.dp))
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .wrapContentHeight(),
-                value = passwords.value,
-                readOnly = state.isLoading,
-                onValueChange = { value ->
-                    if (value.length < 32) {
-                        passwords.value = value
-                    }
-                },
-                textStyle = TextStyle(fontFamily = FontFamily.Monospace),
-            )
             val passphrase = passphrases.value
-            val password = passwords.value
             BasicText(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = passphrase.isNotEmpty() && password.isNotEmpty() && !state.isLoading) {
-                        logics.register(passphrase = passphrase, password = password)
+                    .clickable(enabled = passphrase.isNotEmpty() && !state.isLoading) {
+                        logics.register(passphrase = passphrase)
                     }
                     .padding(16.dp)
                     .wrapContentSize(),

@@ -28,7 +28,7 @@ internal class UnregisteredLogics(
     private val _states = MutableStateFlow<State>(State(isLoading = false))
     val states = _states.asStateFlow()
 
-    fun register(passphrase: String, password: String) = launch {
+    fun register(passphrase: String) = launch {
         logger.debug("register")
         _states.value = State(isLoading = true)
         withContext(providers.contexts.default) {
