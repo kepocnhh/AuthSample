@@ -52,9 +52,6 @@ internal class UnregisteredLogics(
                     ),
                     encoded = encrypted,
                 )
-                val file = providers.dirs.keys.resolve("$id.bin")
-                if (file.exists()) TODO("UnregisteredLogics:register")
-                file.writeBytes(providers.transformers.ek.encode(decoded = ek))
                 providers.locals.ek = ek
                 providers.locals.pk = pk
             }
