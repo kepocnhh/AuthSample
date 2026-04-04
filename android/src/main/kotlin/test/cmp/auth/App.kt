@@ -5,7 +5,9 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import sp.kx.logics.Logics
 import sp.kx.logics.LogicsFactory
 import sp.kx.logics.LogicsProvider
@@ -23,6 +25,7 @@ import test.cmp.auth.provider.Loggers
 import test.cmp.auth.provider.Providers
 import test.cmp.auth.provider.Secrets
 import test.cmp.auth.provider.Transformers
+import test.cmp.auth.util.Biometrics
 
 internal class App : Application() {
     override fun onCreate() {
@@ -31,6 +34,8 @@ internal class App : Application() {
             main = Dispatchers.Main,
             default = Dispatchers.Default,
         )
+        val job = SupervisorJob()
+        val coroutineScope = CoroutineScope(contexts.main + job)
         val context: Context = this
         val dirs: Dirs = FinalDirs(context = context)
         val loggers: Loggers = FinalLoggers
@@ -52,6 +57,10 @@ internal class App : Application() {
             secrets = secrets,
             hashes = hashes,
             transformers = transformers,
+            biometrics = Biometrics(
+                coroutineScope = coroutineScope,
+                context = context,
+            ),
         )
     }
 

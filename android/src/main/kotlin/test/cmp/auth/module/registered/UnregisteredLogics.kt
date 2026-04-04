@@ -11,6 +11,8 @@ import sp.kx.logics.Logics
 import test.cmp.auth.entity.CipherSpec
 import test.cmp.auth.entity.EncryptedKey
 import test.cmp.auth.provider.Providers
+import java.util.concurrent.atomic.AtomicReference
+import javax.crypto.spec.GCMParameterSpec
 
 
 internal class UnregisteredLogics(
@@ -19,7 +21,7 @@ internal class UnregisteredLogics(
     data class State(val isLoading: Boolean)
 
     sealed interface Event {
-        data object OnRegister : Event
+        data class OnRegister(val result: Result<Unit>) : Event
     }
 
     private val logger = providers.loggers.create("[Unregistered]")
@@ -31,42 +33,33 @@ internal class UnregisteredLogics(
     fun register(passphrase: String) = launch {
         logger.debug("register")
         _states.value = State(isLoading = true)
-        withContext(providers.contexts.default) {
+        val result = withContext(providers.contexts.default) {
             val seed = providers.secrets.getSeed(passphrase = passphrase)
             val mk = providers.secrets.getMasterKey(seed = seed)
             val pk = providers.secrets.getPrivateKey(key = mk)
-            val salt = ByteArray(32)
-            providers.secrets.nextBytes(salt)
-            val iterations = 600_000
-            val sk = providers.secrets.getSecretKey(
-                password = password,
-                salt = salt,
-                iterations = iterations,
-                keyLength = 256,
-            )
-            val nonce = ByteArray(12)
-            providers.secrets.nextBytes(nonce)
-            val pub = providers.secrets.getPublicKey(key = pk)
-            val id = providers.hashes.sha256(pub.encoded).readUUID()
-            val ek = EncryptedKey(
-                id = id,
-                cs = CipherSpec(
-                    iterations = iterations,
-                    salt = salt,
-                    nonce = nonce,
-                ),
-                encoded = providers.secrets.encrypt(
-                    key = sk,
-                    decrypted = pk.encoded,
-                    nonce = nonce
-                ),
-            )
-            val file = providers.dirs.keys.resolve("$id.bin")
-            if (file.exists()) TODO("UnregisteredLogics:register")
-            file.writeBytes(providers.transformers.ek.encode(decoded = ek))
-            providers.locals.ek = ek
-            providers.locals.pk = pk
+            val specs = AtomicReference<GCMParameterSpec>(null)
+            runCatching {
+                val encrypted = providers.biometrics.encrypt(decrypted = pk.encoded, specs = specs)
+                val spec = specs.get() ?: error("No spec!")
+                val pub = providers.secrets.getPublicKey(key = pk)
+                val id = providers.hashes.sha256(pub.encoded).readUUID()
+                val ek = EncryptedKey(
+                    id = id,
+                    cs = CipherSpec(
+                        iterations = 0, // todo
+                        salt = byteArrayOf(), // todo
+                        spec = spec,
+                    ),
+                    encoded = encrypted,
+                )
+                val file = providers.dirs.keys.resolve("$id.bin")
+                if (file.exists()) TODO("UnregisteredLogics:register")
+                file.writeBytes(providers.transformers.ek.encode(decoded = ek))
+                providers.locals.ek = ek
+                providers.locals.pk = pk
+            }
         }
-        _events.emit(Event.OnRegister)
+        _states.value = State(isLoading = false)
+        _events.emit(Event.OnRegister(result = result))
     }
 }

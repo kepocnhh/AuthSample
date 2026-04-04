@@ -18,15 +18,15 @@ import javax.crypto.SecretKey
 import kotlin.coroutines.suspendCoroutine
 
 internal class Biometrics(
-    private val context: Context,
     private val coroutineScope: CoroutineScope,
+    private val context: Context,
 ) {
     private val keyAlias = BuildConfig.APPLICATION_ID
     private val algorithm = KeyProperties.KEY_ALGORITHM_AES
     private val blocks = KeyProperties.BLOCK_MODE_GCM
     private val paddings = KeyProperties.ENCRYPTION_PADDING_NONE
     private val keySize = 256
-    private val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG
+    private val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
 
     private fun getKey(): SecretKey {
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
@@ -40,14 +40,14 @@ internal class Biometrics(
             .setKeySize(keySize)
             .setUserAuthenticationRequired(true)
             .setInvalidatedByBiometricEnrollment(true)
-            .setUserAuthenticationParameters(0, KeyProperties.AUTH_BIOMETRIC_STRONG)
+            .setUserAuthenticationParameters(0, KeyProperties.AUTH_BIOMETRIC_STRONG or KeyProperties.AUTH_DEVICE_CREDENTIAL)
             .build()
         val keyGenerator = KeyGenerator.getInstance(algorithm, keyStore.provider)
         keyGenerator.init(spec)
         return keyGenerator.generateKey()
     }
 
-    suspend fun BiometricPrompt.getCipher(issuer: Cipher): Cipher {
+    private suspend fun BiometricPrompt.getCipher(issuer: Cipher): Cipher {
         return coroutineScope.async {
             suspendCoroutine { continuation ->
                 val callback = object : BiometricPrompt.AuthenticationCallback() {

@@ -39,7 +39,16 @@ internal fun UnregisteredScreen(
         withContext(providers.contexts.default) {
             logics.events.collect { event ->
                 when (event) {
-                    UnregisteredLogics.Event.OnRegister -> onRegister()
+                    is UnregisteredLogics.Event.OnRegister -> {
+                        event.result.fold(
+                            onSuccess = {
+                                onRegister()
+                            },
+                            onFailure = { error ->
+                                logger.warning("on register error: $error")
+                            },
+                        )
+                    }
                 }
             }
         }
