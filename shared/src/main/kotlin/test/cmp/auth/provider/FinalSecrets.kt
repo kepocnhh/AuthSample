@@ -74,9 +74,9 @@ internal class FinalSecrets : Secrets {
         return kf.generatePublic(ECPublicKeySpec(w, key.params))
     }
 
-    override fun getSecretKey(password: String, salt: ByteArray, iterations: Int, keyLength: Int): SecretKey {
-        val keyFactory = SecretKeyFactory.getInstance("pbkdf2withhmacsha$keyLength")
-        val keySpec = PBEKeySpec(password.toCharArray(), salt, iterations, keyLength)
+    override fun getSecretKey(password: String, salt: ByteArray, iterations: Int, keySize: Int): SecretKey {
+        val keyFactory = SecretKeyFactory.getInstance("pbkdf2withhmacsha$keySize")
+        val keySpec = PBEKeySpec(password.toCharArray(), salt, iterations, keySize)
         return SecretKeySpec(keyFactory.generateSecret(keySpec).encoded, "aes")
     }
 
@@ -94,15 +94,15 @@ internal class FinalSecrets : Secrets {
         return SecretKeySpec(md.digest(ka.generateSecret()), "aes")
     }
 
-    override fun encrypt(key: SecretKey, decrypted: ByteArray, nonce: ByteArray): ByteArray {
+    override fun encrypt(key: SecretKey, decrypted: ByteArray, spec: GCMParameterSpec): ByteArray {
         val cipher = Cipher.getInstance("aes/gcm/nopadding")
-        cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(128, nonce))
+        cipher.init(Cipher.ENCRYPT_MODE, key, spec)
         return cipher.doFinal(decrypted)
     }
 
-    override fun decrypt(key: SecretKey, encrypted: ByteArray, nonce: ByteArray): ByteArray {
+    override fun decrypt(key: SecretKey, encrypted: ByteArray, spec: GCMParameterSpec): ByteArray {
         val cipher = Cipher.getInstance("aes/gcm/nopadding")
-        cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(128, nonce))
+        cipher.init(Cipher.DECRYPT_MODE, key, spec)
         return cipher.doFinal(encrypted)
     }
 

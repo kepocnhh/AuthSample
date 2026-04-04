@@ -36,9 +36,9 @@ internal class UnauthorizedLogics(
                     password = password,
                     salt = ek.cs.salt,
                     iterations = ek.cs.iterations,
-                    keyLength = 256,
+                    keySize = 256,
                 )
-                val encoded = providers.secrets.decrypt(key = sk, encrypted = ek.encoded, nonce = ek.cs.nonce)
+                val encoded = providers.secrets.decrypt(key = sk, encrypted = ek.encoded, spec = ek.cs.spec)
                 val pk = providers.secrets.toPrivateKey(encoded = encoded)
                 val pub = providers.secrets.getPublicKey(key = pk)
                 val expected = providers.hashes.sha256(pub.encoded).copyOf(16)

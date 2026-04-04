@@ -1,6 +1,7 @@
 package test.cmp.auth.module.registered
 
 import java.util.UUID
+import javax.crypto.spec.GCMParameterSpec
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import sp.kx.bytes.readLong
+import sp.kx.bytes.readUUID
 import sp.kx.logics.Logics
 import test.cmp.auth.entity.CipherSpec
 import test.cmp.auth.entity.EncryptedKey
@@ -66,22 +68,21 @@ internal class UnregisteredLogics(
                 password = password,
                 salt = salt,
                 iterations = iterations,
-                keyLength = 256,
+                keySize = 256,
             )
-            val nonce = ByteArray(12)
-            providers.secrets.nextBytes(nonce)
+            val iv = ByteArray(12)
+            providers.secrets.nextBytes(iv)
             val pub = providers.secrets.getPublicKey(key = pk)
-            val id = providers.hashes.sha256(pub.encoded).copyOf(16).let { bytes ->
-                UUID(bytes.readLong(), bytes.readLong(8))
-            }
+            val id = providers.hashes.sha256(pub.encoded).readUUID()
+            val spec = GCMParameterSpec(128, iv)
             val ek = EncryptedKey(
                 id = id,
                 cs = CipherSpec(
                     iterations = iterations,
                     salt = salt,
-                    nonce = nonce,
+                    spec = spec,
                 ),
-                encoded = providers.secrets.encrypt(key = sk, decrypted = pk.encoded, nonce = nonce),
+                encoded = providers.secrets.encrypt(key = sk, decrypted = pk.encoded, spec = spec),
             )
             val file = providers.dirs.keys.resolve("$id.bin")
             if (file.exists()) TODO("UnregisteredLogics:register")

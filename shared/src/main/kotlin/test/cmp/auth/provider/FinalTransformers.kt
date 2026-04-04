@@ -3,6 +3,7 @@ package test.cmp.auth.provider
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.UUID
+import javax.crypto.spec.GCMParameterSpec
 import sp.kx.bytes.readBytes
 import sp.kx.bytes.readInt
 import sp.kx.bytes.readLong
@@ -17,10 +18,11 @@ internal class FinalTransformers(
         override fun encode(decoded: EncryptedKey): ByteArray {
             return ByteArrayOutputStream().use { stream ->
                 stream.writeBytes(decoded.cs.iterations)
-                stream.writeBytes(decoded.cs.salt.size)
+                stream.write(decoded.cs.salt.size)
                 stream.writeBytes(decoded.cs.salt)
-                stream.writeBytes(decoded.cs.nonce.size)
-                stream.writeBytes(decoded.cs.nonce)
+                stream.write(decoded.cs.spec.tLen)
+                stream.write(decoded.cs.spec.iv.size)
+                stream.write(decoded.cs.spec.iv)
                 stream.writeBytes(decoded.encoded.size)
                 stream.writeBytes(decoded.encoded)
                 stream.writeBytes(decoded.id)
@@ -37,14 +39,14 @@ internal class FinalTransformers(
                     val iterations = src.readBytes(4)
                         .also(dst::writeBytes)
                         .readInt()
-                    val salt = src.readBytes(4)
-                        .also(dst::writeBytes)
-                        .readInt()
+                    val salt = src.read()
+                        .also(dst::write)
                         .let(src::readBytes)
                         .also(dst::writeBytes)
-                    val nonce = src.readBytes(4)
-                        .also(dst::writeBytes)
-                        .readInt()
+                    val tagSize = src.read()
+                        .also(dst::write)
+                    val iv = src.read()
+                        .also(dst::write)
                         .let(src::readBytes)
                         .also(dst::writeBytes)
                     val encoded = src.readBytes(4)
@@ -66,7 +68,7 @@ internal class FinalTransformers(
                         cs = CipherSpec(
                             iterations = iterations,
                             salt = salt,
-                            nonce = nonce,
+                            spec = GCMParameterSpec(tagSize, iv),
                         ),
                         encoded = encoded,
                     )
