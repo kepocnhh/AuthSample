@@ -25,9 +25,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.withContext
 import test.cmp.auth.App
+import test.cmp.auth.entity.EncryptedKey
 
 @Composable
 internal fun UnauthorizedScreen(
+    ek: EncryptedKey,
     onUnlock: () -> Unit,
     onExit: () -> Unit,
 ) {
@@ -64,6 +66,13 @@ internal fun UnauthorizedScreen(
                 .fillMaxWidth()
                 .align(Alignment.Center),
         ) {
+            BasicText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                text = ek.id.toString(),
+                style = TextStyle(fontFamily = FontFamily.Monospace),
+            )
             BasicText(
                 modifier = Modifier
                     .fillMaxWidth()
