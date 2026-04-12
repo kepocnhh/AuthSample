@@ -83,6 +83,7 @@ internal fun UnregisteredScreen(
                         passphrases.value = value
                     }
                 },
+                singleLine = true,
                 textStyle = TextStyle(fontFamily = FontFamily.Monospace),
             )
             val passphrase = passphrases.value
