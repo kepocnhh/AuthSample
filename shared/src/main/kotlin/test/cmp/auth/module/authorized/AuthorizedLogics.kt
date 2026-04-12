@@ -22,6 +22,7 @@ internal class AuthorizedLogics(
     sealed interface Event {
         data object OnLock : Event
         class OnEncrypt(val payload: ByteArray) : Event
+        class OnDecrypt(val result: Result<ByteArray>) : Event
     }
 
     private val logger = providers.loggers.create("[Authorized]")
@@ -86,6 +87,13 @@ internal class AuthorizedLogics(
 
     fun decrypt(payload: ByteArray) = launch {
         logger.debug("decrypt")
-        // todo
+        _states.value = State(isLoading = true)
+        val result = withContext(providers.contexts.default) {
+            runCatching {
+                TODO("AuthorizedLogics:decrypt")
+            }
+        }
+        _states.value = State(isLoading = false)
+        _events.emit(Event.OnDecrypt(result))
     }
 }

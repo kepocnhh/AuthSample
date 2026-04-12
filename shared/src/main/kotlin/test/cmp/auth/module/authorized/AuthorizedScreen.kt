@@ -42,6 +42,16 @@ internal fun AuthorizedScreen(
                         logger.debug("on encrypt: ${event.payload.size}")
                         logics.decrypt(payload = event.payload)
                     }
+                    is AuthorizedLogics.Event.OnDecrypt -> {
+                        event.result.fold(
+                            onSuccess = { body ->
+                                logger.debug("on decrypt: ${String(body)}")
+                            },
+                            onFailure = { error ->
+                                logger.warning("on decrypt error: $error")
+                            },
+                        )
+                    }
                 }
             }
         }
