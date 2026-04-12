@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,10 @@ internal fun AuthorizedScreen(
             logics.events.collect { event ->
                 when (event) {
                     AuthorizedLogics.Event.OnLock -> onLock()
+                    is AuthorizedLogics.Event.OnEncrypt -> {
+                        logger.debug("on encrypt: ${event.payload.size}")
+                        logics.decrypt(payload = event.payload)
+                    }
                 }
             }
         }
@@ -57,6 +62,16 @@ internal fun AuthorizedScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 text = ek.id.toString(),
                 style = TextStyle(fontFamily = FontFamily.Monospace),
+            )
+            BasicText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(!state.isLoading) {
+                        logics.encrypt()
+                    }
+                    .padding(16.dp)
+                    .wrapContentSize(),
+                text = "encrypt",
             )
             BasicText(
                 modifier = Modifier

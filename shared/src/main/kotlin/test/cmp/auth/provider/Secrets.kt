@@ -13,6 +13,7 @@ internal interface Secrets {
     fun getMasterKey(seed: ByteArray): SecretKey
     fun getPrivateKey(key: SecretKey): PrivateKey
     fun getPublicKey(key: PrivateKey): PublicKey
+    fun newSecretKey(): SecretKey
     fun getSecretKey(password: String, salt: ByteArray, iterations: Int, keySize: Int): SecretKey
     fun newKeyPair(): KeyPair
     fun getSharedKey(thisKey: PrivateKey, thatKey: PublicKey): SecretKey

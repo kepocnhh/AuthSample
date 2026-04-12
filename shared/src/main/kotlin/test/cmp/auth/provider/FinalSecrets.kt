@@ -20,6 +20,7 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
+import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
@@ -72,6 +73,12 @@ internal class FinalSecrets : Secrets {
         val w = ECPoint(point.affineXCoord.toBigInteger(), point.affineYCoord.toBigInteger())
         val kf = KeyFactory.getInstance("ec")
         return kf.generatePublic(ECPublicKeySpec(w, key.params))
+    }
+
+    override fun newSecretKey(): SecretKey {
+        val kf = KeyGenerator.getInstance("aes")
+        kf.init(256)
+        return kf.generateKey()
     }
 
     override fun getSecretKey(password: String, salt: ByteArray, iterations: Int, keySize: Int): SecretKey {
