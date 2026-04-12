@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import sp.kx.logics.Logics
+import test.cmp.auth.entity.EncryptedKey
 import test.cmp.auth.provider.Providers
 
 internal class RouterLogics(
@@ -11,7 +12,7 @@ internal class RouterLogics(
 ) : Logics(providers.contexts.main) {
     sealed interface State {
         data object Authorized : State
-        data object Unauthorized : State
+        data class Unauthorized(val ek: EncryptedKey) : State
         data object Unregistered : State
     }
 
@@ -32,7 +33,7 @@ internal class RouterLogics(
                 providers.locals.pk
             }
             if (pk == null) {
-                _states.value = State.Unauthorized
+                _states.value = State.Unauthorized(ek = ek)
             } else {
                 _states.value = State.Authorized
             }

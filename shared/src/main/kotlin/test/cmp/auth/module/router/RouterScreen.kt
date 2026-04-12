@@ -37,8 +37,9 @@ internal fun RouterScreen() {
                     },
                 )
             }
-            RouterLogics.State.Unauthorized -> {
+            is RouterLogics.State.Unauthorized -> {
                 UnauthorizedScreen(
+                    ek = state.ek,
                     onUnlock = {
                         logics.requestState()
                     },
