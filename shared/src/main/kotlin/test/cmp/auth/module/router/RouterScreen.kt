@@ -30,8 +30,9 @@ internal fun RouterScreen() {
             .background(Color.White),
     ) {
         when (state) {
-            RouterLogics.State.Authorized -> {
+            is RouterLogics.State.Authorized -> {
                 AuthorizedScreen(
+                    ek = state.ek,
                     onLock = {
                         logics.requestState()
                     },

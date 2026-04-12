@@ -11,7 +11,7 @@ internal class RouterLogics(
     private val providers: Providers,
 ) : Logics(providers.contexts.main) {
     sealed interface State {
-        data object Authorized : State
+        data class Authorized(val ek: EncryptedKey) : State
         data class Unauthorized(val ek: EncryptedKey) : State
         data object Unregistered : State
     }
@@ -35,7 +35,7 @@ internal class RouterLogics(
             if (pk == null) {
                 _states.value = State.Unauthorized(ek = ek)
             } else {
-                _states.value = State.Authorized
+                _states.value = State.Authorized(ek = ek)
             }
         }
     }

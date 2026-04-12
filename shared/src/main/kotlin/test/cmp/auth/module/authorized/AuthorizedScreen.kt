@@ -16,12 +16,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.withContext
 import test.cmp.auth.App
+import test.cmp.auth.entity.EncryptedKey
 
 @Composable
-internal fun AuthorizedScreen(onLock: () -> Unit) {
+internal fun AuthorizedScreen(
+    ek: EncryptedKey,
+    onLock: () -> Unit,
+) {
     val providers = remember { App.providers }
     val logger = remember { providers.loggers.create("[Authorized]") }
     val logics = App.logics<AuthorizedLogics>()
@@ -45,6 +51,13 @@ internal fun AuthorizedScreen(onLock: () -> Unit) {
                 .fillMaxWidth()
                 .align(Alignment.Center),
         ) {
+            BasicText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                text = ek.id.toString(),
+                style = TextStyle(fontFamily = FontFamily.Monospace),
+            )
             BasicText(
                 modifier = Modifier
                     .fillMaxWidth()
