@@ -51,10 +51,7 @@ internal class App : Application() {
             transformers = transformers,
             loggers = loggers,
         )
-        val biometrics: Biometrics<GCMParameterSpec> = FinalBiometrics(
-            context = context,
-            coroutineScope = coroutineScope,
-        )
+        val biometrics: Biometrics<GCMParameterSpec> = FinalBiometrics(context = context)
         _providers = Providers(
             contexts = contexts,
             dirs = dirs,

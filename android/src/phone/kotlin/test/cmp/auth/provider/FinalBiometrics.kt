@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import test.cmp.auth.BuildConfig
 import java.security.KeyStore
+import java.util.concurrent.Executors
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -18,7 +19,6 @@ import kotlin.coroutines.suspendCoroutine
 
 internal class FinalBiometrics(
     private val context: Context,
-    private val coroutineScope: CoroutineScope,
 ) : Biometrics<GCMParameterSpec> {
     private val keyAlias = BuildConfig.APPLICATION_ID
     private val algorithm = KeyProperties.KEY_ALGORITHM_AES
@@ -26,6 +26,7 @@ internal class FinalBiometrics(
     private val paddings = KeyProperties.ENCRYPTION_PADDING_NONE
     private val keySize = 256
     private val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+    private val executor = Executors.newSingleThreadExecutor()
 
     private fun getKey(): SecretKey {
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
@@ -47,25 +48,23 @@ internal class FinalBiometrics(
     }
 
     private suspend fun BiometricPrompt.getCipher(issuer: Cipher): Cipher {
-        return coroutineScope.async {
-            suspendCoroutine { continuation ->
-                val callback = object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                        continuation.resumeWith(Result.failure(IllegalStateException())) // todo
-                    }
-
-                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                        val result = runCatching {
-                            result.cryptoObject?.cipher ?: error("No cipher!")
-                        }
-                        continuation.resumeWith(result)
-                    }
+        return suspendCoroutine { continuation ->
+            val callback = object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    continuation.resumeWith(Result.failure(IllegalStateException())) // todo
                 }
-                val co = BiometricPrompt.CryptoObject(issuer)
-                val cs = CancellationSignal()
-                authenticate(co, cs, context.mainExecutor, callback)
+
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    val result = runCatching {
+                        result.cryptoObject?.cipher ?: error("No cipher!")
+                    }
+                    continuation.resumeWith(result)
+                }
             }
-        }.await()
+            val co = BiometricPrompt.CryptoObject(issuer)
+            val cs = CancellationSignal()
+            authenticate(co, cs, executor, callback)
+        }
     }
 
     override suspend fun encrypt(decrypted: ByteArray): Pair<GCMParameterSpec, ByteArray> {
