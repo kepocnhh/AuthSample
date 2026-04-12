@@ -1,4 +1,4 @@
-package test.cmp.auth.util
+package test.cmp.auth.provider
 
 import android.content.Context
 import android.hardware.biometrics.BiometricManager
@@ -10,17 +10,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import test.cmp.auth.BuildConfig
 import java.security.KeyStore
-import java.security.spec.AlgorithmParameterSpec
-import java.util.concurrent.atomic.AtomicReference
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import javax.crypto.spec.GCMParameterSpec
 import kotlin.coroutines.suspendCoroutine
 
-internal class Biometrics(
-    private val coroutineScope: CoroutineScope,
+internal class FinalBiometrics(
     private val context: Context,
-) {
+    private val coroutineScope: CoroutineScope,
+) : Biometrics<GCMParameterSpec> {
     private val keyAlias = BuildConfig.APPLICATION_ID
     private val algorithm = KeyProperties.KEY_ALGORITHM_AES
     private val blocks = KeyProperties.BLOCK_MODE_GCM
@@ -52,7 +51,7 @@ internal class Biometrics(
             suspendCoroutine { continuation ->
                 val callback = object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                        continuation.resumeWith(Result.failure(IllegalStateException()))
+                        continuation.resumeWith(Result.failure(IllegalStateException())) // todo
                     }
 
                     override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
@@ -62,12 +61,14 @@ internal class Biometrics(
                         continuation.resumeWith(result)
                     }
                 }
-                authenticate(BiometricPrompt.CryptoObject(issuer), CancellationSignal(), context.mainExecutor, callback)
+                val co = BiometricPrompt.CryptoObject(issuer)
+                val cs = CancellationSignal()
+                authenticate(co, cs, context.mainExecutor, callback)
             }
         }.await()
     }
 
-    suspend inline fun <reified T : AlgorithmParameterSpec> encrypt(decrypted: ByteArray, specs: AtomicReference<T>): ByteArray {
+    override suspend fun encrypt(decrypted: ByteArray): Pair<GCMParameterSpec, ByteArray> {
         val issuer = Cipher.getInstance("$algorithm/$blocks/$paddings")
         issuer.init(Cipher.ENCRYPT_MODE, getKey())
         val cipher = BiometricPrompt.Builder(context)
@@ -77,12 +78,14 @@ internal class Biometrics(
             .build()
             .getCipher(issuer = issuer)
         val encrypted = cipher.doFinal(decrypted)
-        val spec = cipher.parameters.getParameterSpec(T::class.java)
-        specs.set(spec)
-        return encrypted
+        val spec = cipher.parameters.getParameterSpec(GCMParameterSpec::class.java)
+        return Pair(spec, encrypted)
     }
 
-    suspend fun decrypt(encrypted: ByteArray, spec: AlgorithmParameterSpec): ByteArray {
+    override suspend fun decrypt(
+        encrypted: ByteArray,
+        spec: GCMParameterSpec,
+    ): ByteArray {
         val issuer = Cipher.getInstance("$algorithm/$blocks/$paddings")
         issuer.init(Cipher.DECRYPT_MODE, getKey(), spec)
         return BiometricPrompt.Builder(context)

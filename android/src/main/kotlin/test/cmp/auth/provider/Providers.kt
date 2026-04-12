@@ -1,6 +1,6 @@
 package test.cmp.auth.provider
 
-import test.cmp.auth.util.Biometrics
+import javax.crypto.spec.GCMParameterSpec
 
 internal class Providers(
     val contexts: Contexts,
@@ -10,5 +10,5 @@ internal class Providers(
     val secrets: Secrets,
     val hashes: Hashes,
     val transformers: Transformers,
-    val biometrics: Biometrics,
+    val biometrics: Biometrics<GCMParameterSpec>,
 )

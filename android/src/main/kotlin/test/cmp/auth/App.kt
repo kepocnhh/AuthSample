@@ -11,12 +11,14 @@ import kotlinx.coroutines.SupervisorJob
 import sp.kx.logics.Logics
 import sp.kx.logics.LogicsFactory
 import sp.kx.logics.LogicsProvider
-import test.cmp.auth.provider.FinalDirs
-import test.cmp.auth.provider.FinalLocals
-import test.cmp.auth.provider.FinalLoggers
+import test.cmp.auth.provider.Biometrics
 import test.cmp.auth.provider.Contexts
 import test.cmp.auth.provider.Dirs
+import test.cmp.auth.provider.FinalBiometrics
+import test.cmp.auth.provider.FinalDirs
 import test.cmp.auth.provider.FinalHashes
+import test.cmp.auth.provider.FinalLocals
+import test.cmp.auth.provider.FinalLoggers
 import test.cmp.auth.provider.FinalSecrets
 import test.cmp.auth.provider.FinalTransformers
 import test.cmp.auth.provider.Hashes
@@ -25,7 +27,7 @@ import test.cmp.auth.provider.Loggers
 import test.cmp.auth.provider.Providers
 import test.cmp.auth.provider.Secrets
 import test.cmp.auth.provider.Transformers
-import test.cmp.auth.util.Biometrics
+import javax.crypto.spec.GCMParameterSpec
 
 internal class App : Application() {
     override fun onCreate() {
@@ -49,6 +51,10 @@ internal class App : Application() {
             transformers = transformers,
             loggers = loggers,
         )
+        val biometrics: Biometrics<GCMParameterSpec> = FinalBiometrics(
+            context = context,
+            coroutineScope = coroutineScope,
+        )
         _providers = Providers(
             contexts = contexts,
             dirs = dirs,
@@ -57,10 +63,7 @@ internal class App : Application() {
             secrets = secrets,
             hashes = hashes,
             transformers = transformers,
-            biometrics = Biometrics(
-                coroutineScope = coroutineScope,
-                context = context,
-            ),
+            biometrics = biometrics,
         )
     }
 

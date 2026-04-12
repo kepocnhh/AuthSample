@@ -11,9 +11,6 @@ import sp.kx.logics.Logics
 import test.cmp.auth.entity.CipherSpec
 import test.cmp.auth.entity.EncryptedKey
 import test.cmp.auth.provider.Providers
-import java.util.concurrent.atomic.AtomicReference
-import javax.crypto.spec.GCMParameterSpec
-
 
 internal class UnregisteredLogics(
     private val providers: Providers,
@@ -37,10 +34,8 @@ internal class UnregisteredLogics(
             val seed = providers.secrets.getSeed(passphrase = passphrase)
             val mk = providers.secrets.getMasterKey(seed = seed)
             val pk = providers.secrets.getPrivateKey(key = mk)
-            val specs = AtomicReference<GCMParameterSpec>(null)
             runCatching {
-                val encrypted = providers.biometrics.encrypt(decrypted = pk.encoded, specs = specs)
-                val spec = specs.get() ?: error("No spec!")
+                val (spec, encrypted) = providers.biometrics.encrypt(decrypted = pk.encoded)
                 val pub = providers.secrets.getPublicKey(key = pk)
                 val id = providers.hashes.sha256(pub.encoded).readUUID()
                 val ek = EncryptedKey(
